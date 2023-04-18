@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"github.com/SuperJe/coco/pkg/mongo"
 	"github.com/go-admin-team/go-admin-core/sdk/service"
 	"github.com/pkg/errors"
@@ -16,43 +14,43 @@ type Dashboard struct {
 
 // All 获取所有看板
 func (d *Dashboard) All(ctx context.Context, name string) (*dto.AllDashboardRsp, error) {
-	if len(name) == 0 {
-		return nil, errors.New("invalid name")
-	}
-	campProgression, err := d.GetCampProgression(ctx, name)
-	if err != nil {
-		return nil, errors.Wrap(err, "d.GetCampProgressions err")
-	}
-	bs, _ := json.Marshal(campProgression)
-	fmt.Println("progressions:", string(bs))
-	return &dto.AllDashboardRsp{CampProgressions: campProgression}, nil
-	// return &dto.AllDashboardRsp{CampProgressions: &dto.CampaignProgression{
-	// 	Dungeon: &dto.Progression{
-	// 		Done:       20,
-	// 		Unfinished: 80,
-	// 		Total:      100,
-	// 	},
-	// 	Forest: &dto.Progression{
-	// 		Done:       40,
-	// 		Unfinished: 60,
-	// 		Total:      100,
-	// 	},
-	// 	Desert: &dto.Progression{
-	// 		Done:       50,
-	// 		Unfinished: 50,
-	// 		Total:      100,
-	// 	},
-	// 	Mountain: &dto.Progression{
-	// 		Done:       80,
-	// 		Unfinished: 20,
-	// 		Total:      100,
-	// 	},
-	// 	Glacier: &dto.Progression{
-	// 		Done:       100,
-	// 		Unfinished: 0,
-	// 		Total:      100,
-	// 	},
-	// }}, nil
+	// if len(name) == 0 {
+	// 	return nil, errors.New("invalid name")
+	// }
+	// campProgression, err := d.GetCampProgression(ctx, name)
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "d.GetCampProgressions err")
+	// }
+	// bs, _ := json.Marshal(campProgression)
+	// fmt.Println("progressions:", string(bs))
+	// return &dto.AllDashboardRsp{CampProgressions: campProgression}, nil
+	return &dto.AllDashboardRsp{CampProgressions: &dto.CampaignProgression{
+		Dungeon: &dto.Progression{
+			Done:       20,
+			Unfinished: 80,
+			Total:      100,
+		},
+		Forest: &dto.Progression{
+			Done:       40,
+			Unfinished: 60,
+			Total:      100,
+		},
+		Desert: &dto.Progression{
+			Done:       50,
+			Unfinished: 50,
+			Total:      100,
+		},
+		Mountain: &dto.Progression{
+			Done:       80,
+			Unfinished: 20,
+			Total:      100,
+		},
+		Glacier: &dto.Progression{
+			Done:       100,
+			Unfinished: 0,
+			Total:      100,
+		},
+	}}, nil
 }
 
 func (d *Dashboard) GetCampProgression(ctx context.Context, name string) (*dto.CampaignProgression, error) {
