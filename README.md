@@ -1,2 +1,2 @@
 # magic-admin
-magic admin portal
+magic admin
