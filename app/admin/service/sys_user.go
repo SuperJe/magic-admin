@@ -1,15 +1,20 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
-	"go-admin/app/admin/models"
-	"go-admin/app/admin/service/dto"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 
+	"github.com/SuperJe/coco/app/data_proxy/model"
 	log "github.com/go-admin-team/go-admin-core/logger"
 	"github.com/go-admin-team/go-admin-core/sdk/pkg"
 	"github.com/go-admin-team/go-admin-core/sdk/service"
 	"gorm.io/gorm"
 
+	"go-admin/app/admin/models"
+	"go-admin/app/admin/service/dto"
 	"go-admin/common/actions"
 	cDto "go-admin/common/dto"
 )
@@ -96,7 +101,6 @@ func (e *SysUser) Update(c *dto.SysUserUpdateReq, p *actions.DataPermission) err
 	}
 	if db.RowsAffected == 0 {
 		return errors.New("无权更新该数据")
-
 	}
 	c.Generate(&model)
 	update := e.Orm.Model(&model).Where("user_id = ?", &model.UserId).Omit("password", "salt").Updates(&model)
@@ -263,4 +267,39 @@ func (e *SysUser) GetProfile(c *dto.SysUserById, user *models.SysUser, roles *[]
 	}
 
 	return nil
+}
+
+func (e *SysUser) BatchGetCampProgression(names []string) (map[string]*model.CampaignProgression, error) {
+	bs, _ := json.Marshal(names)
+	req, err := http.NewRequest("GET", "http://127.0.0.1:7777/batch_user_progression", nil)
+	if err != nil {
+		return nil, fmt.Errorf("http.NewRequest err:%s", err.Error())
+	}
+	params := req.URL.Query()
+	params.Add("names", string(bs))
+	req.URL.RawQuery = params.Encode()
+	rsp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("http.DefaultClient.Do err:%s", err.Error())
+	}
+	defer func() {
+		if err := rsp.Body.Close(); err != nil {
+			_ = rsp.Body.Close()
+		}
+	}()
+	bs, err = ioutil.ReadAll(rsp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("ReadAll err:%s", err.Error())
+	}
+	if rsp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("http err code:%d", rsp.StatusCode)
+	}
+	data := &model.BatchGetUserProgressionRsp{}
+	if err := json.Unmarshal(bs, data); err != nil {
+		return nil, fmt.Errorf("unmarshal err:%s", err.Error())
+	}
+	if data.Code != 0 {
+		return nil, fmt.Errorf("batch get err:%+v", data.BaseRsp)
+	}
+	return data.CampProgressions, nil
 }

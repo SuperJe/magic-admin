@@ -1,16 +1,18 @@
 package dto
 
 import (
+	"github.com/spf13/cast"
 	"go-admin/app/admin/models"
-
 	"go-admin/common/dto"
 	common "go-admin/common/models"
+	"strings"
 )
 
 type SysUserGetPageReq struct {
 	dto.Pagination `search:"-"`
 	UserId         int    `form:"userId" search:"type:exact;column:user_id;table:sys_user" comment:"用户ID"`
 	Username       string `form:"username" search:"type:contains;column:username;table:sys_user" comment:"用户名"`
+	TeacherName    string `form:"teacher" search:"type:exact;column:teacher_name;table:sys_user:" comment:"教师名"`
 	NickName       string `form:"nickName" search:"type:contains;column:nick_name;table:sys_user" comment:"昵称"`
 	Phone          string `form:"phone" search:"type:contains;column:phone;table:sys_user" comment:"手机号"`
 	RoleId         string `form:"roleId" search:"type:exact;column:role_id;table:sys_user" comment:"角色ID"`
@@ -90,14 +92,15 @@ func (s *UpdateSysUserStatusReq) Generate(model *models.SysUser) {
 
 type SysUserInsertReq struct {
 	UserId   int    `json:"userId" comment:"用户ID"` // 用户ID
+	Teacher  string `json:"teacherName" comment:"教师ID"`
 	Username string `json:"username" comment:"用户名" vd:"len($)>0"`
 	Password string `json:"password" comment:"密码"`
 	NickName string `json:"nickName" comment:"昵称" vd:"len($)>0"`
 	Phone    string `json:"phone" comment:"手机号" vd:"len($)>0"`
-	RoleId   int    `json:"roleId" comment:"角色ID"`
+	RoleId   int    `json:"roleId" comment:"角色ID" vd:"$>0"`
 	Avatar   string `json:"avatar" comment:"头像"`
 	Sex      string `json:"sex" comment:"性别"`
-	Email    string `json:"email" comment:"邮箱" vd:"len($)>0,email"`
+	Email    string `json:"email" comment:"邮箱" `
 	DeptId   int    `json:"deptId" comment:"部门" vd:"$>0"`
 	PostId   int    `json:"postId" comment:"岗位"`
 	Remark   string `json:"remark" comment:"备注"`
@@ -122,6 +125,11 @@ func (s *SysUserInsertReq) Generate(model *models.SysUser) {
 	model.Remark = s.Remark
 	model.Status = s.Status
 	model.CreateBy = s.CreateBy
+	if len(s.Teacher) > 0 {
+		teacher := strings.Split(s.Teacher, ":")
+		model.TeacherName = teacher[1]
+		model.TeacherId = cast.ToInt(teacher[0])
+	}
 }
 
 func (s *SysUserInsertReq) GetId() interface{} {
@@ -132,11 +140,12 @@ type SysUserUpdateReq struct {
 	UserId   int    `json:"userId" comment:"用户ID"` // 用户ID
 	Username string `json:"username" comment:"用户名" vd:"len($)>0"`
 	NickName string `json:"nickName" comment:"昵称" vd:"len($)>0"`
+	Teacher  string `json:"teacherName" comment:"教师"`
 	Phone    string `json:"phone" comment:"手机号" vd:"len($)>0"`
-	RoleId   int    `json:"roleId" comment:"角色ID"`
+	RoleId   int    `json:"roleId" comment:"角色ID" vd:"$>0"`
 	Avatar   string `json:"avatar" comment:"头像"`
 	Sex      string `json:"sex" comment:"性别"`
-	Email    string `json:"email" comment:"邮箱" vd:"len($)>0,email"`
+	Email    string `json:"email" comment:"邮箱"`
 	DeptId   int    `json:"deptId" comment:"部门" vd:"$>0"`
 	PostId   int    `json:"postId" comment:"岗位"`
 	Remark   string `json:"remark" comment:"备注"`
@@ -159,6 +168,11 @@ func (s *SysUserUpdateReq) Generate(model *models.SysUser) {
 	model.PostId = s.PostId
 	model.Remark = s.Remark
 	model.Status = s.Status
+	if len(s.Teacher) > 0 {
+		teacher := strings.Split(s.Teacher, ":")
+		model.TeacherName = teacher[1]
+		model.TeacherId = cast.ToInt(teacher[0])
+	}
 }
 
 func (s *SysUserUpdateReq) GetId() interface{} {
