@@ -3,7 +3,7 @@ module go-admin
 go 1.18
 
 require (
-	github.com/SuperJe/coco v0.1.3-beta
+	github.com/SuperJe/coco v0.1.4-beta
 	github.com/alibaba/sentinel-golang v1.0.4
 	github.com/alibaba/sentinel-golang/pkg/adapters/gin v0.0.0-20220808015021-c5f1f1d055c5
 	github.com/aliyun/aliyun-oss-go-sdk v0.0.0-20190307165228-86c17b95fcd5
