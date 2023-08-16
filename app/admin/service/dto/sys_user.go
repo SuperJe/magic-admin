@@ -12,7 +12,7 @@ type SysUserGetPageReq struct {
 	dto.Pagination `search:"-"`
 	UserId         int    `form:"userId" search:"type:exact;column:user_id;table:sys_user" comment:"用户ID"`
 	Username       string `form:"username" search:"type:contains;column:username;table:sys_user" comment:"用户名"`
-	TeacherName    string `form:"teacher" search:"type:exact;column:teacher_name;table:sys_user:" comment:"教师名"`
+	TeacherID      int32  `form:"teacherId" search:"type:exact;column:teacher_id;table:sys_user:" comment:"教师ID"`
 	NickName       string `form:"nickName" search:"type:contains;column:nick_name;table:sys_user" comment:"昵称"`
 	Phone          string `form:"phone" search:"type:contains;column:phone;table:sys_user" comment:"手机号"`
 	RoleId         string `form:"roleId" search:"type:exact;column:role_id;table:sys_user" comment:"角色ID"`
