@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/go-admin-team/go-admin-core/sdk/config"
 	"gorm.io/gorm/clause"
@@ -177,6 +178,16 @@ func (e *SysRole) Update(c *dto.SysRoleUpdateReq, cb *casbin.SyncedEnforcer) err
 			}
 		}
 	}
+	fmt.Println()
+	fmt.Println()
+	for _, police := range polices {
+		for _, p := range police {
+			fmt.Printf("p: %+v\n", p)
+		}
+		fmt.Println("another")
+	}
+	fmt.Println()
+	fmt.Println()
 	if len(polices) <= 0 {
 		return nil
 	}

@@ -4,7 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/SuperJe/coco/pkg/mongo"
+	"go-admin/app/admin/models"
+	"io/ioutil"
+	"net/http"
+
+	"github.com/SuperJe/coco/app/data_proxy/model"
 	"github.com/go-admin-team/go-admin-core/sdk/service"
 	"github.com/pkg/errors"
 	"go-admin/app/admin/service/dto"
@@ -15,77 +19,58 @@ type Dashboard struct {
 }
 
 // All 获取所有看板
-func (d *Dashboard) All(ctx context.Context, name string) (*dto.AllDashboardRsp, error) {
+func (d *Dashboard) All(ctx context.Context, name string, id int) (*dto.AllDashboardRsp, error) {
 	if len(name) == 0 {
 		return nil, errors.New("invalid name")
 	}
-	campProgression, err := d.GetCampProgression(ctx, name)
+	campProgression, err := d.GetCampProgression(name)
 	if err != nil {
 		return nil, errors.Wrap(err, "d.GetCampProgressions err")
 	}
+	// 查评语
+	var data models.SysUser
+	remark := ""
+	if err := d.Orm.First(&data, id).Error; err != nil {
+		remark = "N/A"
+	} else {
+		remark = data.Remark
+	}
+	fmt.Println("sys user:", data)
+	if remark == "" {
+		remark = "N/A"
+	}
 	bs, _ := json.Marshal(campProgression)
 	fmt.Println("progressions:", string(bs))
-	return &dto.AllDashboardRsp{CampProgressions: campProgression}, nil
-	// return &dto.AllDashboardRsp{CampProgressions: &dto.CampaignProgression{
-	// 	Dungeon: &dto.Progression{
-	// 		Done:       20,
-	// 		Unfinished: 80,
-	// 		Total:      100,
-	// 	},
-	// 	Forest: &dto.Progression{
-	// 		Done:       40,
-	// 		Unfinished: 60,
-	// 		Total:      100,
-	// 	},
-	// 	Desert: &dto.Progression{
-	// 		Done:       50,
-	// 		Unfinished: 50,
-	// 		Total:      100,
-	// 	},
-	// 	Mountain: &dto.Progression{
-	// 		Done:       80,
-	// 		Unfinished: 20,
-	// 		Total:      100,
-	// 	},
-	// 	Glacier: &dto.Progression{
-	// 		Done:       100,
-	// 		Unfinished: 0,
-	// 		Total:      100,
-	// 	},
-	// }}, nil
+	return &dto.AllDashboardRsp{CampProgressions: campProgression, Remark: remark}, nil
 }
 
-func (d *Dashboard) GetCampProgression(ctx context.Context, name string) (*dto.CampaignProgression, error) {
-	cli, err := mongo.NewCocoClient2()
+func (d *Dashboard) GetCampProgression(name string) (*dto.CampaignProgression, error) {
+	req, err := http.NewRequest("GET", "http://127.0.0.1:7777/user_progression", nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "NewCocoClient2 err")
+		return nil, errors.Wrap(err, "http.NewRequest err")
 	}
-	counts, err := cli.CountLevels(ctx)
+	params := req.URL.Query()
+	params.Add("name", name)
+	req.URL.RawQuery = params.Encode()
+	rsp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, errors.Wrap(err, "cli.CountLevels err")
+		return nil, errors.Wrap(err, "cli.Do err")
 	}
-	levels, err := cli.GetCompletedLevels(ctx, name)
+	defer func() {
+		if err := rsp.Body.Close(); err != nil {
+			_ = rsp.Body.Close()
+		}
+	}()
+	bs, err := ioutil.ReadAll(rsp.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "cli.GetCompletedLevels err")
+		return nil, errors.Wrap(err, "ReadAll err")
 	}
-	completed, err := cli.GroupLevelByCampaign(ctx, levels)
-	if err != nil {
-		return nil, errors.Wrap(err, "cli.GroupLevelByCampaign err")
+	if rsp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("http err code:%d", rsp.StatusCode)
 	}
-
-	progressions := &dto.CampaignProgression{}
-	progressions.Dungeon = buildProgression("Dungeon", completed, counts)
-	progressions.Forest = buildProgression("Forest", completed, counts)
-	progressions.Desert = buildProgression("Desert", completed, counts)
-	progressions.Mountain = buildProgression("Mountain", completed, counts)
-	progressions.Glacier = buildProgression("Glacier", completed, counts)
-	return progressions, nil
-}
-
-func buildProgression(campaign string, completed map[string][]string, counts map[string]int32) *dto.Progression {
-	return &dto.Progression{
-		Done:       int32(len(completed[campaign])),
-		Unfinished: counts[campaign] - int32(len(completed[campaign])),
-		Total:      counts[campaign],
+	data := &model.GetUserProgressionRsp{}
+	if err := json.Unmarshal(bs, data); err != nil {
+		return nil, errors.Wrap(err, "unmarshal err")
 	}
+	return dto.NewCampaignProgression(data.CampaignProgression), nil
 }

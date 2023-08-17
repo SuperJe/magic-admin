@@ -3,6 +3,7 @@ package apis
 import (
 	"github.com/gin-gonic/gin/binding"
 	"go-admin/app/admin/models"
+	"go-admin/common"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 
@@ -48,11 +49,30 @@ func (e SysUser) GetPage(c *gin.Context) {
 
 	list := make([]models.SysUser, 0)
 	var count int64
-
+	if user.GetRoleName(c) == common.RoleAdmin && req.TeacherID != 0 {
+		req.TeacherID = 0
+	}
 	err = s.GetPage(&req, p, &list, &count)
 	if err != nil {
 		e.Error(500, err, "查询失败")
 		return
+	}
+	if user.GetRoleName(c) == common.RoleTeacher || user.GetRoleName(c) == common.RoleAdmin {
+		names := make([]string, 0, len(list))
+		for _, v := range list {
+			names = append(names, v.Username)
+		}
+		ps, err := s.BatchGetCampProgression(names)
+		if err != nil {
+			e.Logger.Error(err)
+		} else {
+			for i, _ := range list {
+				if _, ok := ps[list[i].Username]; !ok {
+					continue
+				}
+				list[i].Progress = ps[list[i].Username].String()
+			}
+		}
 	}
 
 	e.PageOK(list, int(count), req.GetPageIndex(), req.GetPageSize(), "查询成功")
