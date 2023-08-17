@@ -49,7 +49,9 @@ func (e SysUser) GetPage(c *gin.Context) {
 
 	list := make([]models.SysUser, 0)
 	var count int64
-
+	if user.GetRoleName(c) == common.RoleAdmin && req.TeacherID != 0 {
+		req.TeacherID = 0
+	}
 	err = s.GetPage(&req, p, &list, &count)
 	if err != nil {
 		e.Error(500, err, "查询失败")
