@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go-admin/common"
 	"io/ioutil"
 	"net/http"
 
@@ -102,6 +103,16 @@ func (e *SysUser) Update(c *dto.SysUserUpdateReq, p *actions.DataPermission) err
 	if db.RowsAffected == 0 {
 		return errors.New("无权更新该数据")
 	}
+	// 如果更新所属教师需要查出来教师名
+	// TODO: 这里应该改为前端拉取教师接口, 然后后端校验教师id和name是否匹配即可
+	if c.TeacherId > 0 {
+		tn, err := e.getTeacherName(c.TeacherId)
+		if err != nil {
+			e.Log.Errorf("e.getUserName err:%s", err.Error())
+			return err
+		}
+		c.TeacherName = tn
+	}
 	c.Generate(&model)
 	update := e.Orm.Model(&model).Where("user_id = ?", &model.UserId).Omit("password", "salt").Updates(&model)
 	if err = update.Error; err != nil {
@@ -114,6 +125,19 @@ func (e *SysUser) Update(c *dto.SysUserUpdateReq, p *actions.DataPermission) err
 		return err
 	}
 	return nil
+}
+
+func (e *SysUser) getTeacherName(id int) (string, error) {
+	user := &models.SysUser{}
+	db := e.Orm.Where("user_id = ? AND role_id = ?", id, common.RoleIDTeacher).First(user)
+	if db.Error != nil {
+		e.Log.Errorf("find teacher %d err:%s", id, db.Error.Error())
+		return "", db.Error
+	}
+	if db.RowsAffected == 0 {
+		return "", fmt.Errorf("cannot find teacher %d", id)
+	}
+	return user.Username, nil
 }
 
 // UpdateAvatar 更新用户头像

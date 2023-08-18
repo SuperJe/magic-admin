@@ -35,12 +35,9 @@ func (d *Dashboard) All(ctx context.Context, name string, id int) (*dto.AllDashb
 	} else {
 		remark = data.Remark
 	}
-	fmt.Println("sys user:", data)
 	if remark == "" {
 		remark = "N/A"
 	}
-	bs, _ := json.Marshal(campProgression)
-	fmt.Println("progressions:", string(bs))
 	return &dto.AllDashboardRsp{CampProgressions: campProgression, Remark: remark}, nil
 }
 

@@ -1,7 +1,6 @@
 package apis
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +25,6 @@ func (d Dashboard) All(c *gin.Context) {
 	rsp, err := svc.All(c, name, id)
 	if err != nil {
 		d.Error(http.StatusInternalServerError, err, err.Error())
-		fmt.Printf("err:%s\n", err.Error())
 		return
 	}
 	d.OK(rsp, "success")
