@@ -177,6 +177,7 @@ func (e SysUser) Update(c *gin.Context) {
 	err = s.Update(&req, p)
 	if err != nil {
 		e.Logger.Error(err)
+		e.Error(http.StatusInternalServerError, err, err.Error())
 		return
 	}
 	e.OK(req.GetId(), "更新成功")
