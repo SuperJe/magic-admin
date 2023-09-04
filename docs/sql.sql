@@ -14,6 +14,7 @@ CREATE TABLE `courses` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 insert into courses(name, course_type, total_lesson_hours, pre_required, target, recommend_competition, recommend_period) values ('Python基础课程', 1, 40, '零基础即可学习', '青少年编程能力等级考试7级', '蓝桥杯/STEAM测试', '二至六年级');
+insert into courses(name, course_type, total_lesson_hours, pre_required, target, recommend_competition, recommend_period) values ('C++基础课程', 2, 50, '了解任意语言基础', '青少年编程能力等级考试5级', 'CCF/CSP认证', '小学高年级以上');
 
 CREATE TABLE `lesson_record` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -41,4 +42,7 @@ CREATE TABLE IF NOT EXISTS `lesson_record_002` (
     KEY `idx_user_course` (`user_id`,`course_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 
-insert into lesson_record_002 (user_id, course_type, teacher, tags, remark) values(2, 1, '颜总监', '拍马屁', '总监今天教我拍马屁呀真牛逼');
+insert into lesson_record_002 (user_id, course_type, teacher, tags, remark) values(2, 2, '岳小弟', '循环', '今天学习循环知识');
+insert into lesson_record_002 (user_id, course_type, teacher, tags, remark) values(2, 2, '岳小弟', '条件语句', '今天学习条件语句知识');
+insert into lesson_record_002 (user_id, course_type, teacher, tags, remark) values(2, 2, '岳小弟', '控制语句', '今天学习控制语句知识');
+insert into lesson_record_002 (user_id, course_type, teacher, tags, remark) values(2, 2, '岳小弟', '三目表达式', '今天学习三目表达式知识');

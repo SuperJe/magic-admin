@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/go-admin-team/go-admin-core/sdk/service"
 	"github.com/pkg/errors"
 	"go-admin/app/admin/service/dto"
+	"time"
 )
 
 const createLessonRecordSQL = "CREATE TABLE IF NOT EXISTS `%s` ( " +
@@ -54,11 +54,63 @@ func (c *Courses) GetLearnedLessons(ctx context.Context, req *dto.GetLearnedReq)
 	if tx.Error != nil {
 		return nil, errors.Wrap(tx.Error, "Find err")
 	}
-	fmt.Printf("\n\ntotal hourse:%d, leanred hours:%d\n", course.TotalLessonHours, tx.RowsAffected)
-	bs, _ := json.Marshal(records)
-	fmt.Println("records:", string(bs))
+	for i := range records {
+		records[i].LearnedTime = records[i].Created.Format("2006-01-02 15:04:05")
+	}
 	return &dto.GetLearnedRsp{
 		TotalLessonHours: course.TotalLessonHours,
 		Records:          records,
 	}, nil
+}
+
+func (c *Courses) hasSigned(userID int64, courseType int32) (bool, int64, error) {
+	lr := &dto.LessonRecord{UserID: userID}
+	tb := lr.TableName()
+	count := int64(0)
+	err := c.Orm.Table(tb).Where("user_id = ? and course_type = ?", userID, courseType).Count(&count).Error
+	if err != nil {
+		return false, 0, errors.Wrap(err, "Count err")
+	}
+	// 没有记录 说明没有签到过
+	if count == 0 {
+		return false, 0, nil
+	}
+	// 查最近一条记录
+	err = c.Orm.Table(tb).Last(lr, &dto.LessonRecord{UserID: userID, CourseType: courseType}).Error
+	if err != nil {
+		return false, 0, errors.Wrap(err, "Last err")
+	}
+
+	nowStr := time.Now().Format("2006-01-02")
+	createStr := lr.Created.Format("2006-01-02")
+	return nowStr == createStr, count, nil
+}
+
+func (c *Courses) SignLesson(ctx context.Context, req *dto.SignLessonReq) (*dto.SignLessonRsp, error) {
+	// 查数据库里有没有在今天上过课的
+	signed, count, err := c.hasSigned(req.UserID, req.CourseType)
+	if err != nil {
+		return nil, errors.Wrap(err, "c.hasSigned err")
+	}
+	// 已签到，直接返回
+	if signed {
+		c.Log.Warnf("user %d has signed course %d today", req.UserID, req.CourseType)
+		return &dto.SignLessonRsp{LearnedLessons: int32(count)}, nil
+	}
+
+	// 未签到，创建一条新记录
+	lr := &dto.LessonRecord{
+		UserID:        req.UserID,
+		CourseType:    req.CourseType,
+		KnowledgeTags: "待确认",
+		Teacher:       "同步中",
+		Remark:        "",
+		Created:       time.Now(),
+		Updated:       time.Now(),
+	}
+	err = c.Orm.Table(lr.TableName()).Create(lr).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "Create err")
+	}
+	return &dto.SignLessonRsp{LearnedLessons: int32(count) + 1}, nil
 }

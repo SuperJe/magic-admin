@@ -18,5 +18,6 @@ func registerCoursesRouter(v1 *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddle
 	{
 		r.GET("/detail", actions.PermissionAction(), api.GetCourseDetail)
 		r.GET("/learned", actions.PermissionAction(), api.GetLearnedLessons)
+		r.POST("/sign", actions.PermissionAction(), api.SignLesson)
 	}
 }

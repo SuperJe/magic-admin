@@ -19,7 +19,8 @@ type LessonRecord struct {
 	Teacher       string    `json:"teacher" gorm:"column:teacher"`
 	Remark        string    `json:"remark" gorm:"column:remark"`
 	Updated       time.Time `json:"updated" gorm:"column:updated"`
-	Created       time.Time `json:"date" gorm:"column:created"`
+	Created       time.Time `json:"created" gorm:"column:created"`
+	LearnedTime   string    `json:"date" gorm:"-"`
 }
 
 func (lr *LessonRecord) TableName() string {
@@ -63,4 +64,13 @@ type GetLearnedReq struct {
 type GetLearnedRsp struct {
 	TotalLessonHours int32           `json:"total_lesson_hours"`
 	Records          []*LessonRecord `json:"records"`
+}
+
+type SignLessonReq struct {
+	CourseType int32 `json:"course_type"`
+	UserID     int64 `json:"user_id"`
+}
+
+type SignLessonRsp struct {
+	LearnedLessons int32 `json:"learned_lessons"`
 }

@@ -3,6 +3,7 @@ package apis
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/go-admin-team/go-admin-core/sdk/api"
 	"github.com/go-admin-team/go-admin-core/sdk/pkg/jwtauth/user"
 	"go-admin/app/admin/service"
@@ -49,18 +50,37 @@ func (c Courses) GetLearnedLessons(ctx *gin.Context) {
 		c.Error(http.StatusBadRequest, fmt.Errorf("user id err"), "user id err")
 		return
 	}
-	fmt.Println()
-	fmt.Println()
-	fmt.Println("req:", req)
-	fmt.Println()
-	fmt.Println()
 
 	req.UserID = int64(user.GetUserId(ctx))
 	rsp, err := svc.GetLearnedLessons(ctx, req)
 	if err != nil {
-		fmt.Printf("\n\nerr:%s\n\n\n", err.Error())
 		c.Logger.Error(err)
 		c.Error(http.StatusInternalServerError, err, "server busy")
+		return
+	}
+	c.OK(rsp, "success")
+}
+
+func (c Courses) SignLesson(ctx *gin.Context) {
+	s := service.Courses{}
+	req := &dto.SignLessonReq{}
+	err := c.MakeContext(ctx).MakeOrm().Bind(req, binding.JSON).MakeService(&s.Service).Errors
+	if err != nil {
+		c.Logger.Error(err)
+		c.Error(http.StatusBadRequest, err, err.Error())
+		return
+	}
+	if user.GetUserId(ctx) == 0 {
+		c.Logger.Error(fmt.Errorf("user id err"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("user id err"), "user id err")
+		return
+	}
+
+	req.UserID = int64(user.GetUserId(ctx))
+	rsp, err := s.SignLesson(ctx, req)
+	if err != nil {
+		c.Logger.Error(err)
+		c.Error(http.StatusInternalServerError, err, err.Error())
 		return
 	}
 	c.OK(rsp, "success")
