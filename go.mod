@@ -3,7 +3,7 @@ module go-admin
 go 1.18
 
 require (
-	github.com/SuperJe/coco v0.1.4-beta
+	github.com/SuperJe/coco v0.1.5-beta
 	github.com/alibaba/sentinel-golang v1.0.4
 	github.com/alibaba/sentinel-golang/pkg/adapters/gin v0.0.0-20220808015021-c5f1f1d055c5
 	github.com/aliyun/aliyun-oss-go-sdk v0.0.0-20190307165228-86c17b95fcd5
@@ -22,7 +22,7 @@ require (
 	github.com/qiniu/go-sdk/v7 v7.11.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/shirou/gopsutil/v3 v3.22.1
-	github.com/spf13/cast v1.3.1
+	github.com/spf13/cast v1.5.1
 	github.com/spf13/cobra v1.0.0
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
 	github.com/swaggo/gin-swagger v1.5.0

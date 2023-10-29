@@ -46,3 +46,16 @@ insert into lesson_record_002 (user_id, course_type, teacher, tags, remark) valu
 insert into lesson_record_002 (user_id, course_type, teacher, tags, remark) values(2, 2, '岳小弟', '条件语句', '今天学习条件语句知识');
 insert into lesson_record_002 (user_id, course_type, teacher, tags, remark) values(2, 2, '岳小弟', '控制语句', '今天学习控制语句知识');
 insert into lesson_record_002 (user_id, course_type, teacher, tags, remark) values(2, 2, '岳小弟', '三目表达式', '今天学习三目表达式知识');
+
+CREATE TABLE `practice_cpp` (
+`id` bigint NOT NULL AUTO_INCREMENT,
+`p_id` int(11) NOT NULL,
+`user_id` int(11) NOT NULL,
+`code` text,
+`created` datetime DEFAULT CURRENT_TIMESTAMP,
+`updated` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+PRIMARY KEY (`id`),
+UNIQUE KEY `idx_user_pid` (`user_id`, `p_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+insert into practice_cpp (p_id, user_id, code) values (1, 2, 'Hello World!');
