@@ -35,11 +35,13 @@ func (p *Practice) GetPracticeCode(ctx context.Context, ids []int32, uid int) (*
 	}
 	rsp := &dto.GetPracticeCodeRsp{
 		BaseRsp: dto.BaseRsp{},
-		Codes:   map[int64]string{},
+		Details: map[int64]*dto.LastSubmitDetail{},
 	}
 	for _, cp := range cps {
 		cp := cp
-		rsp.Codes[cp.ProblemID] = cp.Code
+		rsp.Details[cp.ProblemID] = &dto.LastSubmitDetail{}
+		rsp.Details[cp.ProblemID].Code = cp.Code
+		rsp.Details[cp.ProblemID].Msg = cp.LastStatusMsg()
 	}
 	return rsp, nil
 }
@@ -62,11 +64,22 @@ func (p *Practice) SavePracticeCode(ctx context.Context, uid, id int64, code str
 	return p.Orm.Model(cp).UpdateColumn("code", code).Error
 }
 
-func (p *Practice) SubmitPracticeCode(ctx context.Context, uid, id int64, code string) (*dto.SubmitPracticeCodeRsp, error) {
-	// 先写入DB
-	if err := p.SavePracticeCode(ctx, uid, id, code); err != nil {
-		return nil, err
-	}
+func (p *Practice) SubmitPracticeCode(ctx context.Context, uid, id int64, code string) (rsp *dto.SubmitPracticeCodeRsp, err error) {
+	defer func() {
+		status := 1
+		if err != nil {
+			status = 0
+		}
+		if err := p.SavePracticeCode(ctx, uid, id, code); err != nil {
+			fmt.Printf("save practice code fail, uid:%d, id:%d, err:%s", uid, id, err.Error())
+			return
+		}
+		cp := &dto.CPPPractice{}
+		if err := p.Orm.Table(cp.TableName()).Where("user_id = ? AND p_id = ?", uid, id).UpdateColumn("last_status", status).Error; err != nil {
+			fmt.Printf("update last status fail, uid:%d, id:%d, err:%s", uid, id, err.Error())
+			return
+		}
+	}()
 
 	path, _ := os.Getwd()
 	path = fmt.Sprintf("%s/common/problem/practice/cpp/practice_cpp_%d.txt", path, id)
@@ -74,7 +87,8 @@ func (p *Practice) SubmitPracticeCode(ctx context.Context, uid, id int64, code s
 	file, err := os.Open(path)
 	if err != nil {
 		// 处理错误
-		return nil, errors.Wrapf(err, "open file %s err", path)
+		err = errors.Wrapf(err, "open file %s err", path)
+		return rsp, err
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
@@ -82,28 +96,32 @@ func (p *Practice) SubmitPracticeCode(ctx context.Context, uid, id int64, code s
 		}
 	}()
 
-	rsp := &dto.SubmitPracticeCodeRsp{Accept: true}
+	rsp = &dto.SubmitPracticeCodeRsp{Accept: true}
 	// 创建一个 Scanner 对象来从文件中读取内容
 	scanner := bufio.NewScanner(file)
 	// 逐行读取文件内容
 	// 文件都是以3|2格式开头，表示接下来3行是输入，2行是输出。
 	// 一直读取到文件末尾
 	for scanner.Scan() {
-		in, expOut, err := readPracticeData(scanner)
+		in := ""
+		expOut := ""
+		actOut := ""
+		in, expOut, err = readPracticeData(scanner)
 		if err != nil {
-			return nil, err
+			return rsp, err
 		}
 
-		actOut, err := getActualOutput(in, code)
+		actOut, err = getActualOutput(in, code)
 		if err != nil {
-			return nil, err
+			return rsp, err
 		}
 		if expOut != actOut {
-			return nil, fmt.Errorf("WRONG! 输入样例:\n%s\n\n您的输出:\n%s\n\n期望输出:\n%s\n", in, actOut, expOut)
+			err = fmt.Errorf("WRONG! 输入样例:\n%s\n\n您的输出:\n%s\n\n期望输出:\n%s\n", in, actOut, expOut)
+			return rsp, err
 		}
 	}
 
-	return rsp, nil
+	return rsp, err
 }
 
 func getActualOutput(in, code string) (string, error) {
