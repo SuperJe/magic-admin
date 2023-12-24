@@ -1,0 +1,9 @@
+1|1
+abccdsfdccc
+c 5
+1|1
+abcde
+a 1
+1|1
+abcabcabbbbbbbb
+b 10
