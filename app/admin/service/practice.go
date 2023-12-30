@@ -159,7 +159,11 @@ func getActualOutput(in, code string) (string, error) {
 	if data.Code != 0 {
 		return "", fmt.Errorf("compiler err:%s", data.Msg)
 	}
-	return data.OutPut, nil
+	output := data.OutPut
+	if len(output) > 0 && (output[len(output)-1] == ' ' || output[len(output)-1] == '\n') {
+		output = output[:len(output)-1]
+	}
+	return output, nil
 }
 
 func readPracticeData(scanner *bufio.Scanner) (string, string, error) {
