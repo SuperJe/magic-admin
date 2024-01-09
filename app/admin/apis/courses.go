@@ -94,11 +94,14 @@ func (c Courses) AddLessonRecord(ctx *gin.Context) {
 		c.Error(http.StatusInternalServerError, err, err.Error())
 		return
 	}
-	if user.GetRoleName(ctx) == 0 {
-		c.Logger.Error(fmt.Errorf("user id err"))
-		c.Error(http.StatusBadRequest, fmt.Errorf("user id err"), "user id err")
+	if len(user.GetRoleName(ctx)) <= 0 {
+		c.Logger.Error(fmt.Errorf("user role err"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
 		return
 	}
+	name := user.GetUserName(ctx)
+	c.Orm.Table("sys_user").Raw("select * from %s where %s", "sys_user", name)
+	req.UserID = int64(user.GetUserId(ctx))
 	rsp, err := svc.AddLessonRecord(ctx, req)
 	if err != nil {
 		c.Logger.Error(err)

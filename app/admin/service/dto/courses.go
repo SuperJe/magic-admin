@@ -76,11 +76,14 @@ type SignLessonRsp struct {
 }
 
 type AddLessonRecordReq struct {
+	CourseType    int32     `json:"course_type"`
+	UserID        int64     `json:"user_id"`
 	Name          string    `json:"name"`
 	KnowledgeTags string    `json:"tags"`
 	Teacher       string    `json:"teacher"`
 	Remark        string    `json:"remark"`
 	Created       time.Time `json:"created"`
+	LearnedTime   string    `json:"date"`
 }
 
 type AddLessonRecordRsp struct {

@@ -118,11 +118,14 @@ func (c *Courses) SignLesson(ctx context.Context, req *dto.SignLessonReq) (*dto.
 func (c *Courses) AddLessonRecord(ctx context.Context, req *dto.AddLessonRecordReq) (*dto.AddLessonRecordRsp, error) {
 	course := &dto.Course{}
 	newRecord := &dto.LessonRecord{
+		UserID:        req.UserID,
+		CourseType:    req.CourseType,
 		KnowledgeTags: req.KnowledgeTags,
 		Teacher:       req.Teacher,
 		Remark:        req.Remark,
 		Created:       req.Created,
 	}
+	c.Orm.Table(course.TableName()).Raw("CREATE TABLE IF NOT EXISTS `%s`(", createLessonRecordSQL)
 	err := c.Orm.Table(course.TableName()).Create(&newRecord).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "Create err")
