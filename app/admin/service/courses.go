@@ -116,21 +116,27 @@ func (c *Courses) SignLesson(ctx context.Context, req *dto.SignLessonReq) (*dto.
 }
 
 func (c *Courses) AddLessonRecord(ctx context.Context, req *dto.AddLessonRecordReq) (*dto.AddLessonRecordRsp, error) {
-	course := &dto.Course{}
 	newRecord := &dto.LessonRecord{
-		UserID:        req.UserID,
+		UserID:        int64(req.UserID),
 		CourseType:    req.CourseType,
 		KnowledgeTags: req.KnowledgeTags,
 		Teacher:       req.Teacher,
 		Remark:        req.Remark,
 		Created:       req.Created,
 	}
-	c.Orm.Table(course.TableName()).Raw("CREATE TABLE IF NOT EXISTS `%s`(", createLessonRecordSQL)
-	err := c.Orm.Table(course.TableName()).Create(&newRecord).Error
+	// TODO: 创建表
+	lr := &dto.LessonRecord{UserID: int64(req.UserID)}
+	tb := lr.TableName()
+	sql := fmt.Sprintf(createLessonRecordSQL, tb)
+	if err := c.Orm.Exec(sql).Error; err != nil {
+		return nil, errors.Wrap(err, "Exec err")
+	}
+	err := c.Orm.Table(tb).Create(&newRecord).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "Create err")
 	}
-	var id int64
-	c.Orm.Table(course.TableName()).Raw("select LAST_INSERT_ID() as id").Pluck("id", id)
-	return &dto.AddLessonRecordRsp{1, "ok", id}, nil
+	//var id int64
+	// c.Orm.Table().Create()
+	//c.Orm.Table(course.TableName()).Raw("select LAST_INSERT_ID() as id").Pluck("id", id)
+	return &dto.AddLessonRecordRsp{Code: 1, Msg: "ok", ID: newRecord.ID}, nil
 }
