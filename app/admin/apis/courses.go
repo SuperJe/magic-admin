@@ -113,11 +113,12 @@ func (c Courses) AddLessonRecord(ctx *gin.Context) {
 		return
 	}
 	sysUser := &models.SysUser{}
-	if err := c.Orm.Table("sys_user").First(sysUser).Where("username = ?", req.Name).Error; err != nil {
+	if err := c.Orm.Table("sys_user").Where("username = ?", req.Name).First(sysUser).Error; err != nil {
 		c.Logger.Error(fmt.Errorf("get first err:%s", err.Error()))
 		c.Error(http.StatusBadRequest, fmt.Errorf("get first err:%s", err.Error()), "get first err")
 		return
 	}
+	fmt.Printf("\n\n\n\nusername=%s, sysUser:%+v, req：%+v\n\n\n\n", req.Name, sysUser, req)
 	// 没有报错说明找到了
 	req.UserID = sysUser.UserId
 	rsp, err := svc.AddLessonRecord(ctx, req)

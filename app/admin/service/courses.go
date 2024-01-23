@@ -123,6 +123,7 @@ func (c *Courses) AddLessonRecord(ctx context.Context, req *dto.AddLessonRecordR
 		Teacher:       req.Teacher,
 		Remark:        req.Remark,
 		Created:       req.Created,
+		Updated:       time.Now(),
 	}
 	// TODO: 创建表
 	lr := &dto.LessonRecord{UserID: int64(req.UserID)}
