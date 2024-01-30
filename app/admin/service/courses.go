@@ -141,3 +141,7 @@ func (c *Courses) AddLessonRecord(ctx context.Context, req *dto.AddLessonRecordR
 	//c.Orm.Table(course.TableName()).Raw("select LAST_INSERT_ID() as id").Pluck("id", id)
 	return &dto.AddLessonRecordRsp{Code: 1, Msg: "ok", ID: newRecord.ID}, nil
 }
+
+//func (c *Courses) GetStudentName() {
+//
+//}

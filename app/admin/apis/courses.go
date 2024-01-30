@@ -129,3 +129,7 @@ func (c Courses) AddLessonRecord(ctx *gin.Context) {
 	}
 	c.OK(rsp, "success")
 }
+
+//func (c Courses) GetStudentName(ctx *gin.Context) {
+//	svc := service.Courses{}
+//}

@@ -90,3 +90,8 @@ type AddLessonRecordRsp struct {
 	Msg  string `json:"msg"`
 	ID   int64  `json:"id"`
 }
+
+type GetStudentNameReq struct {
+	UserID int
+	Value  string
+}
