@@ -114,3 +114,26 @@ func (c *Courses) SignLesson(ctx context.Context, req *dto.SignLessonReq) (*dto.
 	}
 	return &dto.SignLessonRsp{LearnedLessons: int32(count) + 1}, nil
 }
+
+func (c *Courses) AddLessonRecord(ctx context.Context, req *dto.AddLessonRecordReq) (*dto.AddLessonRecordRsp, error) {
+	newRecord := &dto.LessonRecord{
+		UserID:        int64(req.UserID),
+		CourseType:    req.CourseType,
+		KnowledgeTags: req.KnowledgeTags,
+		Teacher:       req.Teacher,
+		Remark:        req.Remark,
+		Created:       req.Created,
+		Updated:       time.Now(),
+	}
+	lr := &dto.LessonRecord{UserID: int64(req.UserID)}
+	tb := lr.TableName()
+	sql := fmt.Sprintf(createLessonRecordSQL, tb)
+	if err := c.Orm.Exec(sql).Error; err != nil {
+		return nil, errors.Wrap(err, "Exec err")
+	}
+	err := c.Orm.Table(tb).Create(&newRecord).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "Create err")
+	}
+	return &dto.AddLessonRecordRsp{Code: 0, Msg: "ok", ID: newRecord.ID}, nil
+}

@@ -8,6 +8,7 @@ import (
 	"github.com/go-admin-team/go-admin-core/sdk/pkg/jwtauth/user"
 	"go-admin/app/admin/service"
 	"go-admin/app/admin/service/dto"
+	"go-admin/cmd/migrate/migration/models"
 	"net/http"
 )
 
@@ -85,3 +86,47 @@ func (c Courses) SignLesson(ctx *gin.Context) {
 	}
 	c.OK(rsp, "success")
 }
+
+func (c Courses) AddLessonRecord(ctx *gin.Context) {
+	svc := service.Courses{}
+	req := &dto.AddLessonRecordReq{}
+	if err := c.MakeContext(ctx).MakeOrm().Bind(req).MakeService(&svc.Service).Errors; err != nil {
+		c.Logger.Error(err)
+		c.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	if user.GetRoleName(ctx) != "teacher" && user.GetRoleName(ctx) != "admin" {
+		c.Logger.Error(fmt.Errorf("user role err"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
+		return
+	}
+	if req.CourseType != 1 && req.CourseType != 2 {
+		c.Logger.Error(fmt.Errorf("courseType err"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("courseType err"), "courseType err")
+		return
+	}
+	if len(req.KnowledgeTags) <= 0 || len(req.Remark) <= 0 || len(req.Teacher) <= 0 {
+		c.Logger.Error(fmt.Errorf("missing field"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("missing field"), "missing field")
+		return
+	}
+	sysUser := &models.SysUser{}
+	if err := c.Orm.Table("sys_user").Where("username = ?", req.Name).First(sysUser).Error; err != nil {
+		c.Logger.Error(fmt.Errorf("get first err:%s", err.Error()))
+		c.Error(http.StatusBadRequest, fmt.Errorf("get first err:%s", err.Error()), "get first err")
+		return
+	}
+	// 没有报错说明找到了
+	req.UserID = sysUser.UserId
+	rsp, err := svc.AddLessonRecord(ctx, req)
+	if err != nil {
+		c.Logger.Error(err)
+		c.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	c.OK(rsp, "success")
+}
+
+//func (c Courses) GetStudentName(ctx *gin.Context) {
+//	svc := service.Courses{}
+//}
