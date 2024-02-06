@@ -50,9 +50,17 @@ func (c Courses) GetLearnedLessons(ctx *gin.Context) {
 		c.Logger.Error(fmt.Errorf("user id err"))
 		c.Error(http.StatusBadRequest, fmt.Errorf("user id err"), "user id err")
 		return
+	} 
+	if(req.UserID > 0) {
+		if user.GetRoleName(ctx) != "teacher" && user.GetRoleName(ctx) != "admin" {
+			c.Logger.Error(fmt.Errorf("user role err"))
+			c.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
+			return
+		}
 	}
-
-	req.UserID = int64(user.GetUserId(ctx))
+	else{
+		req.UserID = int64(user.GetUserId(ctx))		
+	}
 	rsp, err := svc.GetLearnedLessons(ctx, req)
 	if err != nil {
 		c.Logger.Error(err)
