@@ -50,17 +50,23 @@ func (c Courses) GetLearnedLessons(ctx *gin.Context) {
 		c.Logger.Error(fmt.Errorf("user id err"))
 		c.Error(http.StatusBadRequest, fmt.Errorf("user id err"), "user id err")
 		return
-	} 
-	if(req.UserID > 0) {
-		if user.GetRoleName(ctx) != "teacher" && user.GetRoleName(ctx) != "admin" {
-			c.Logger.Error(fmt.Errorf("user role err"))
-			c.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
+	}
+	req.UserID = int64(user.GetUserId(ctx))
+	sysUser := &models.SysUser{}
+	if len(req.Username) > 0 {
+		if err := c.Orm.Table("sys_user").Where("username = ?", req.Username).First(sysUser).Error; err != nil {
+			c.Logger.Error(fmt.Errorf("get first err:%s", err.Error()))
+			c.Error(http.StatusBadRequest, fmt.Errorf("get first err:%s", err.Error()), "get first err")
 			return
 		}
 	}
-	else{
-		req.UserID = int64(user.GetUserId(ctx))		
+	fmt.Printf("\n\n\n\nsysUser%+v\n\n\n\n", sysUser)
+	if len(sysUser.Username) > 0 {
+		req.UserID = int64(sysUser.UserId)
 	}
+	//if req.Username == "小明" {
+	//	req.UserID = 2
+	//}
 	rsp, err := svc.GetLearnedLessons(ctx, req)
 	if err != nil {
 		c.Logger.Error(err)

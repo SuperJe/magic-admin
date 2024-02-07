@@ -57,8 +57,9 @@ type GetCoursesDetailRsp struct {
 }
 
 type GetLearnedReq struct {
-	CourseType int32 `form:"course_type" json:"course_type"`
-	UserID     int64 `form:"user_id" json:"user_id"`
+	CourseType int32  `form:"course_type" json:"course_type"`
+	UserID     int64  `json:"user_id"`
+	Username   string `form:"user_name" json:"user_name"`
 }
 
 type GetLearnedRsp struct {
