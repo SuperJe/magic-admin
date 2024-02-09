@@ -60,13 +60,9 @@ func (c Courses) GetLearnedLessons(ctx *gin.Context) {
 			return
 		}
 	}
-	fmt.Printf("\n\n\n\nsysUser%+v\n\n\n\n", sysUser)
 	if len(sysUser.Username) > 0 {
 		req.UserID = int64(sysUser.UserId)
 	}
-	//if req.Username == "小明" {
-	//	req.UserID = 2
-	//}
 	rsp, err := svc.GetLearnedLessons(ctx, req)
 	if err != nil {
 		c.Logger.Error(err)
@@ -90,7 +86,6 @@ func (c Courses) SignLesson(ctx *gin.Context) {
 		c.Error(http.StatusBadRequest, fmt.Errorf("user id err"), "user id err")
 		return
 	}
-
 	req.UserID = int64(user.GetUserId(ctx))
 	rsp, err := s.SignLesson(ctx, req)
 	if err != nil {

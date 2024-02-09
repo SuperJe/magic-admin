@@ -38,9 +38,11 @@ func (c *Courses) GetCourseDetail(ctx context.Context, courseType int32) (*dto.G
 func (c *Courses) GetLearnedLessons(ctx context.Context, req *dto.GetLearnedReq) (*dto.GetLearnedRsp, error) {
 	// 查总课时
 	course := &dto.Course{}
-	if err := c.Orm.Table(course.TableName()).Select("total_lesson_hours").
-		Where("course_type = ?", req.CourseType).First(&course).Error; err != nil {
-		return nil, errors.Wrap(err, "select total_lesson_hours err")
+	if req.CourseType != 0 {
+		if err := c.Orm.Table(course.TableName()).Select("total_lesson_hours").
+			Where("course_type = ?", req.CourseType).First(&course).Error; err != nil {
+			return nil, errors.Wrap(err, "select total_lesson_hours err")
+		}
 	}
 	// 查上课记录
 	lr := &dto.LessonRecord{UserID: req.UserID}
@@ -50,7 +52,11 @@ func (c *Courses) GetLearnedLessons(ctx context.Context, req *dto.GetLearnedReq)
 		return nil, errors.Wrap(err, "Exec err")
 	}
 	records := make([]*dto.LessonRecord, 0)
+	fmt.Printf("\n\n\n\n%d\n\n\n\n", req.CourseType)
 	tx := c.Orm.Table(tb).Find(&records, &dto.LessonRecord{CourseType: req.CourseType, UserID: req.UserID})
+	if req.CourseType == 0 {
+		tx = c.Orm.Table(tb).Find(&records, &dto.LessonRecord{UserID: req.UserID})
+	}
 	if tx.Error != nil {
 		return nil, errors.Wrap(tx.Error, "Find err")
 	}
