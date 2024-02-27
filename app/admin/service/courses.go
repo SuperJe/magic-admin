@@ -52,7 +52,6 @@ func (c *Courses) GetLearnedLessons(ctx context.Context, req *dto.GetLearnedReq)
 		return nil, errors.Wrap(err, "Exec err")
 	}
 	records := make([]*dto.LessonRecord, 0)
-	fmt.Printf("\n\n\n\n%d\n\n\n\n", req.CourseType)
 	tx := c.Orm.Table(tb).Find(&records, &dto.LessonRecord{CourseType: req.CourseType, UserID: req.UserID})
 	if req.CourseType == 0 {
 		tx = c.Orm.Table(tb).Find(&records, &dto.LessonRecord{UserID: req.UserID})
@@ -142,8 +141,22 @@ func (c *Courses) AddLessonRecord(ctx context.Context, req *dto.AddLessonRecordR
 	if err != nil {
 		return nil, errors.Wrap(err, "Create err")
 	}
-	//var id int64
-	// c.Orm.Table().Create()
-	//c.Orm.Table(course.TableName()).Raw("select LAST_INSERT_ID() as id").Pluck("id", id)
 	return &dto.AddLessonRecordRsp{Code: 0, Msg: "ok", ID: newRecord.ID}, nil
+}
+
+func (c *Courses) UpdateCourse(ctx context.Context, req *dto.UpdateRecordReq) (*dto.UpdateRecordRsp, error) {
+	lr := &dto.LessonRecord{UserID: int64(req.UserID)}
+	tb := lr.TableName()
+	err := c.Orm.Table(tb).Where("id = ?", req.ID).Updates(dto.LessonRecord{
+		CourseType:    req.CourseType,
+		KnowledgeTags: req.KnowledgeTags,
+		Teacher:       req.Teacher,
+		Remark:        req.Remark,
+		Created:       req.Created,
+		Updated:       time.Now(),
+	}).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "Update err")
+	}
+	return &dto.UpdateRecordRsp{Code: 0, Msg: "ok", ID: req.ID}, nil
 }

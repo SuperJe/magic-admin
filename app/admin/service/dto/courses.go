@@ -96,3 +96,19 @@ type GetStudentNameReq struct {
 	UserID int
 	Value  string
 }
+
+type UpdateRecordReq struct {
+	ID            int64     `json:"id"`
+	CourseType    int32     `json:"course_type"`
+	UserID        int       `json:"user_id"`
+	KnowledgeTags string    `json:"tags"`
+	Teacher       string    `json:"teacher"`
+	Remark        string    `json:"remark"`
+	Created       time.Time `json:"created"`
+}
+
+type UpdateRecordRsp struct {
+	Code int32  `json:"code"`
+	Msg  string `json:"msg"`
+	ID   int64  `json:"id"`
+}

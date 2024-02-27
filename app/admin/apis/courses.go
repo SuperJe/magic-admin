@@ -139,6 +139,34 @@ func (c Courses) AddLessonRecord(ctx *gin.Context) {
 	c.OK(rsp, "success")
 }
 
-//func (c Courses) GetStudentName(ctx *gin.Context) {
-//	svc := service.Courses{}
-//}
+func (c Courses) UpdateCourse(ctx *gin.Context) {
+	svc := service.Courses{}
+	req := &dto.UpdateRecordReq{}
+	if err := c.MakeContext(ctx).MakeOrm().Bind(req).MakeService(&svc.Service).Errors; err != nil {
+		c.Logger.Error(err)
+		c.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	if user.GetRoleName(ctx) != "teacher" && user.GetRoleName(ctx) != "admin" {
+		c.Logger.Error(fmt.Errorf("user role err"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
+		return
+	}
+	if req.CourseType != 1 && req.CourseType != 2 {
+		c.Logger.Error(fmt.Errorf("courseType err"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("courseType err"), "courseType err")
+		return
+	}
+	if len(req.KnowledgeTags) <= 0 || len(req.Remark) <= 0 || len(req.Teacher) <= 0 {
+		c.Logger.Error(fmt.Errorf("missing field"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("missing field"), "missing field")
+		return
+	}
+	rsp, err := svc.UpdateCourse(ctx, req)
+	if err != nil {
+		c.Logger.Error(err)
+		c.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	c.OK(rsp, "success")
+}
