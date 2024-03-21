@@ -112,3 +112,14 @@ type UpdateRecordRsp struct {
 	Msg  string `json:"msg"`
 	ID   int64  `json:"id"`
 }
+
+type DeleteRecordReq struct {
+	ID     int64 `json:"id"`
+	UserID int   `json:"user_id"`
+}
+
+type DeleteRecordRsp struct {
+	Code int32  `json:"code"`
+	Msg  string `json:"msg"`
+	ID   int64  `json:"id"`
+}

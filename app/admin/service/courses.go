@@ -18,6 +18,7 @@ const createLessonRecordSQL = "CREATE TABLE IF NOT EXISTS `%s` ( " +
 	"`remark` text DEFAULT NULL," +
 	"`created` datetime DEFAULT CURRENT_TIMESTAMP," +
 	"`updated` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
+	"`is_deleted` tinyint(1) NOT NULL DEFAULT 0, " +
 	"PRIMARY KEY (`id`)," +
 	"KEY `idx_user_course` (`user_id`, `course_type`)" +
 	") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci"
@@ -52,9 +53,11 @@ func (c *Courses) GetLearnedLessons(ctx context.Context, req *dto.GetLearnedReq)
 		return nil, errors.Wrap(err, "Exec err")
 	}
 	records := make([]*dto.LessonRecord, 0)
-	tx := c.Orm.Table(tb).Find(&records, &dto.LessonRecord{CourseType: req.CourseType, UserID: req.UserID})
+	tx := c.Orm.Table(tb).Where("is_deleted = ?", 0).Find(
+		&records, &dto.LessonRecord{CourseType: req.CourseType, UserID: req.UserID})
 	if req.CourseType == 0 {
-		tx = c.Orm.Table(tb).Find(&records, &dto.LessonRecord{UserID: req.UserID})
+		tx = c.Orm.Table(tb).Where("is_deleted = ?", 0).Find(
+			&records, &dto.LessonRecord{UserID: req.UserID})
 	}
 	if tx.Error != nil {
 		return nil, errors.Wrap(tx.Error, "Find err")
@@ -159,4 +162,14 @@ func (c *Courses) UpdateCourse(ctx context.Context, req *dto.UpdateRecordReq) (*
 		return nil, errors.Wrap(err, "Update err")
 	}
 	return &dto.UpdateRecordRsp{Code: 0, Msg: "ok", ID: req.ID}, nil
+}
+
+func (c *Courses) DeleteCourse(ctx context.Context, req *dto.DeleteRecordReq) (*dto.DeleteRecordRsp, error) {
+	lr := &dto.LessonRecord{UserID: int64(req.UserID)}
+	tb := lr.TableName()
+	err := c.Orm.Table(tb).Where("id = ?", req.ID).Update("is_deleted", 1).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "Delete err")
+	}
+	return &dto.DeleteRecordRsp{Code: 0, Msg: "ok", ID: req.ID}, nil
 }

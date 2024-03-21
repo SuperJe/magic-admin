@@ -198,3 +198,39 @@ func readPracticeData(scanner *bufio.Scanner) (string, string, error) {
 	}
 	return inputString, outputString, nil
 }
+
+func (p *Practice) GetQuestions(ctx context.Context, ids []int32) (*dto.GetQuestionsRsp, error) {
+	if len(ids) == 0 {
+		return nil, fmt.Errorf("empty param")
+	}
+	questions := make([]*dto.Questions, 0)
+	if err := p.Orm.Table("questions").Where("id IN ?", ids).Find(&questions).Error; err != nil {
+		return nil, err
+	}
+	rsp := &dto.GetQuestionsRsp{
+		BaseRsp:   dto.BaseRsp{},
+		Questions: map[int64]*dto.QuestionDetail{},
+	}
+	for _, q := range questions {
+		q := q
+		rsp.Questions[q.ID] = &dto.QuestionDetail{}
+		rsp.Questions[q.ID].Title = q.Title
+		rsp.Questions[q.ID].Option = q.Options
+		rsp.Questions[q.ID].CorrectOption = q.CorrectOption
+	}
+	return rsp, nil
+}
+
+func (p *Practice) QuestionSubmit(ctx context.Context, req *dto.QuestionSubmitReq) (rsp *dto.QuestionSubmitRsp, err error) {
+	nq := &dto.Questions{
+		Title:         req.Title,
+		Options:       req.Options,
+		CorrectOption: req.CorrectOption,
+		Tag:           req.Tag,
+	}
+	err = p.Orm.Table("questions").Create(&nq).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "Create err")
+	}
+	return rsp, err
+}

@@ -9,6 +9,7 @@ import (
 	"github.com/go-admin-team/go-admin-core/sdk/pkg/jwtauth/user"
 	"go-admin/app/admin/service"
 	"go-admin/app/admin/service/dto"
+	"go-admin/cmd/migrate/migration/models"
 	"net/http"
 )
 
@@ -29,14 +30,26 @@ func (p Practice) GetPracticeCode(ctx *gin.Context) {
 		p.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
 		return
 	}
-
+	req.UserID = int64(user.GetUserId(ctx))
+	sysUser := &models.SysUser{}
+	if len(req.Username) > 0 && req.Username != "undefined" {
+		if err := p.Orm.Table("sys_user").Where("username = ?", req.Username).First(sysUser).Error; err != nil {
+			p.Logger.Error(fmt.Errorf("get first err:%s", err.Error()))
+			p.Error(http.StatusBadRequest, fmt.Errorf("get first err:%s", err.Error()), "get first err")
+			return
+		}
+	}
+	if len(sysUser.Username) > 0 {
+		req.UserID = int64(sysUser.UserId)
+	}
 	list := make([]int32, 0)
 	if err := json.Unmarshal([]byte(req.IDList), &list); err != nil {
 		p.Logger.Error(err)
 		p.Error(http.StatusBadRequest, err, err.Error())
 		return
 	}
-	rsp, err := svc.GetPracticeCode(ctx, list, user.GetUserId(ctx))
+	rsp, err := svc.GetPracticeCode(ctx, list, int(req.UserID))
+	// rsp, err := svc.GetPracticeCode(ctx, list, user.GetUserId(ctx))
 	if err != nil {
 		p.Error(http.StatusInternalServerError, err, err.Error())
 		return
@@ -58,9 +71,75 @@ func (p Practice) SubmitPracticeCode(ctx *gin.Context) {
 		return
 	}
 
-	rsp, err := svc.SubmitPracticeCode(ctx, int64(user.GetUserId(ctx)), req.ID, req.Code)
+	req.UserID = int64(user.GetUserId(ctx))
+	sysUser := &models.SysUser{}
+	if len(req.Username) > 0 && req.Username != "undefined" {
+		if err := p.Orm.Table("sys_user").Where("username = ?", req.Username).First(sysUser).Error; err != nil {
+			p.Logger.Error(fmt.Errorf("get first err:%s", err.Error()))
+			p.Error(http.StatusBadRequest, fmt.Errorf("get first err:%s", err.Error()), "get first err")
+			return
+		}
+	}
+	if len(sysUser.Username) > 0 {
+		req.UserID = int64(sysUser.UserId)
+	}
+	rsp, err := svc.SubmitPracticeCode(ctx, req.UserID, req.ID, req.Code)
+	// rsp, err := svc.SubmitPracticeCode(ctx, int64(user.GetUserId(ctx)), req.ID, req.Code)
 	if err != nil {
 		rsp = &dto.SubmitPracticeCodeRsp{
+			BaseRsp: dto.BaseRsp{Code: -1, Msg: err.Error()},
+		}
+		p.OK(rsp, "success")
+		return
+	}
+	p.OK(rsp, "success")
+}
+
+func (p Practice) GetQuestions(ctx *gin.Context) {
+	svc := service.Practice{}
+	req := &dto.GetQuestionsReq{}
+	if err := p.MakeContext(ctx).MakeOrm().Bind(req).MakeService(&svc.Service).Errors; err != nil {
+		p.Logger.Error(err)
+		p.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+
+	fmt.Println(req, "\n\n\n\n")
+	if len(user.GetRoleName(ctx)) <= 0 {
+		p.Logger.Error(fmt.Errorf("user role err"))
+		p.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
+		return
+	}
+	list := make([]int32, 0)
+	if err := json.Unmarshal([]byte(req.IDList), &list); err != nil {
+		p.Logger.Error(err)
+		p.Error(http.StatusBadRequest, err, err.Error())
+		return
+	}
+	rsp, err := svc.GetQuestions(ctx, list)
+	if err != nil {
+		p.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	p.OK(rsp, "success")
+}
+
+func (p Practice) QuestionSubmit(ctx *gin.Context) {
+	svc := service.Practice{}
+	req := &dto.QuestionSubmitReq{}
+	if err := p.MakeContext(ctx).MakeOrm().Bind(req, binding.JSON).MakeService(&svc.Service).Errors; err != nil {
+		p.Logger.Error(err)
+		p.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	if len(user.GetRoleName(ctx)) <= 0 {
+		p.Logger.Error(fmt.Errorf("user role err"))
+		p.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
+		return
+	}
+	rsp, err := svc.QuestionSubmit(ctx, req)
+	if err != nil {
+		rsp = &dto.QuestionSubmitRsp{
 			BaseRsp: dto.BaseRsp{Code: -1, Msg: err.Error()},
 		}
 		p.OK(rsp, "success")

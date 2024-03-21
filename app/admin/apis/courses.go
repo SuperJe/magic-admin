@@ -127,7 +127,6 @@ func (c Courses) AddLessonRecord(ctx *gin.Context) {
 		c.Error(http.StatusBadRequest, fmt.Errorf("get first err:%s", err.Error()), "get first err")
 		return
 	}
-	fmt.Printf("\n\n\n\nusername=%s, sysUser:%+v, req：%+v\n\n\n\n", req.Name, sysUser, req)
 	// 没有报错说明找到了
 	req.UserID = sysUser.UserId
 	rsp, err := svc.AddLessonRecord(ctx, req)
@@ -163,6 +162,28 @@ func (c Courses) UpdateCourse(ctx *gin.Context) {
 		return
 	}
 	rsp, err := svc.UpdateCourse(ctx, req)
+	if err != nil {
+		c.Logger.Error(err)
+		c.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	c.OK(rsp, "success")
+}
+
+func (c Courses) DeleteCourse(ctx *gin.Context) {
+	svc := service.Courses{}
+	req := &dto.DeleteRecordReq{}
+	if err := c.MakeContext(ctx).MakeOrm().Bind(req).MakeService(&svc.Service).Errors; err != nil {
+		c.Logger.Error(err)
+		c.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	if user.GetRoleName(ctx) != "teacher" && user.GetRoleName(ctx) != "admin" {
+		c.Logger.Error(fmt.Errorf("user role err"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
+		return
+	}
+	rsp, err := svc.DeleteCourse(ctx, req)
 	if err != nil {
 		c.Logger.Error(err)
 		c.Error(http.StatusInternalServerError, err, err.Error())
