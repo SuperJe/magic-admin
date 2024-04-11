@@ -51,8 +51,18 @@ func (c Courses) GetLearnedLessons(ctx *gin.Context) {
 		c.Error(http.StatusBadRequest, fmt.Errorf("user id err"), "user id err")
 		return
 	}
-
 	req.UserID = int64(user.GetUserId(ctx))
+	sysUser := &models.SysUser{}
+	if len(req.Username) > 0 {
+		if err := c.Orm.Table("sys_user").Where("username = ?", req.Username).First(sysUser).Error; err != nil {
+			c.Logger.Error(fmt.Errorf("get first err:%s", err.Error()))
+			c.Error(http.StatusBadRequest, fmt.Errorf("get first err:%s", err.Error()), "get first err")
+			return
+		}
+	}
+	if len(sysUser.Username) > 0 {
+		req.UserID = int64(sysUser.UserId)
+	}
 	rsp, err := svc.GetLearnedLessons(ctx, req)
 	if err != nil {
 		c.Logger.Error(err)
@@ -76,7 +86,6 @@ func (c Courses) SignLesson(ctx *gin.Context) {
 		c.Error(http.StatusBadRequest, fmt.Errorf("user id err"), "user id err")
 		return
 	}
-
 	req.UserID = int64(user.GetUserId(ctx))
 	rsp, err := s.SignLesson(ctx, req)
 	if err != nil {
@@ -95,11 +104,13 @@ func (c Courses) AddLessonRecord(ctx *gin.Context) {
 		c.Error(http.StatusInternalServerError, err, err.Error())
 		return
 	}
+	// TODO: role name判断
 	if user.GetRoleName(ctx) != "teacher" && user.GetRoleName(ctx) != "admin" {
 		c.Logger.Error(fmt.Errorf("user role err"))
 		c.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
 		return
 	}
+	// TODO: 请求字段校验
 	if req.CourseType != 1 && req.CourseType != 2 {
 		c.Logger.Error(fmt.Errorf("courseType err"))
 		c.Error(http.StatusBadRequest, fmt.Errorf("courseType err"), "courseType err")
@@ -127,6 +138,56 @@ func (c Courses) AddLessonRecord(ctx *gin.Context) {
 	c.OK(rsp, "success")
 }
 
-//func (c Courses) GetStudentName(ctx *gin.Context) {
-//	svc := service.Courses{}
-//}
+func (c Courses) UpdateCourse(ctx *gin.Context) {
+	svc := service.Courses{}
+	req := &dto.UpdateRecordReq{}
+	if err := c.MakeContext(ctx).MakeOrm().Bind(req).MakeService(&svc.Service).Errors; err != nil {
+		c.Logger.Error(err)
+		c.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	if user.GetRoleName(ctx) != "teacher" && user.GetRoleName(ctx) != "admin" {
+		c.Logger.Error(fmt.Errorf("user role err"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
+		return
+	}
+	if req.CourseType != 1 && req.CourseType != 2 {
+		c.Logger.Error(fmt.Errorf("courseType err"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("courseType err"), "courseType err")
+		return
+	}
+	if len(req.KnowledgeTags) <= 0 || len(req.Remark) <= 0 || len(req.Teacher) <= 0 {
+		c.Logger.Error(fmt.Errorf("missing field"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("missing field"), "missing field")
+		return
+	}
+	rsp, err := svc.UpdateCourse(ctx, req)
+	if err != nil {
+		c.Logger.Error(err)
+		c.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	c.OK(rsp, "success")
+}
+
+func (c Courses) DeleteCourse(ctx *gin.Context) {
+	svc := service.Courses{}
+	req := &dto.DeleteRecordReq{}
+	if err := c.MakeContext(ctx).MakeOrm().Bind(req).MakeService(&svc.Service).Errors; err != nil {
+		c.Logger.Error(err)
+		c.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	if user.GetRoleName(ctx) != "teacher" && user.GetRoleName(ctx) != "admin" {
+		c.Logger.Error(fmt.Errorf("user role err"))
+		c.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
+		return
+	}
+	rsp, err := svc.DeleteCourse(ctx, req)
+	if err != nil {
+		c.Logger.Error(err)
+		c.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	c.OK(rsp, "success")
+}

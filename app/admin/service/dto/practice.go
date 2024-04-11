@@ -12,6 +12,15 @@ type CPPPractice struct {
 	Created    time.Time `json:"created" gorm:"column:created"`
 }
 
+type Questions struct {
+	ID            int64  `json:"id"`
+	Title         string `json:"title"`
+	Options       string `json:"options"`
+	CorrectOption int64  `json:"correct_option"`
+	Tag           string `json:"tag"`
+	Score         int64  `json:"score"`
+}
+
 func (cp *CPPPractice) TableName() string {
 	return "practice_cpp"
 }
@@ -27,12 +36,21 @@ func (cp *CPPPractice) LastStatusMsg() string {
 }
 
 type GetPracticeCodeReq struct {
-	IDList string `form:"ids" json:"ids"`
+	IDList   string `form:"ids" json:"ids"`
+	UserID   int64  `json:"user_id"`
+	Username string `form:"user_name" json:"user_name"`
 }
 
 type LastSubmitDetail struct {
 	Code string `json:"code"`
 	Msg  string `json:"msg"`
+}
+type QuestionDetail struct {
+	Title         string `json:"title"`
+	Option        string `json:"option"`
+	CorrectOption int64  `json:"correct_option"`
+	Tag           string `json:"tag"`
+	Score         int64  `json:"score"`
 }
 
 type GetPracticeCodeRsp struct {
@@ -41,11 +59,34 @@ type GetPracticeCodeRsp struct {
 }
 
 type SubmitPracticeCodeReq struct {
-	ID   int64  `json:"id"`
-	Code string `json:"code"`
+	ID       int64  `json:"id"`
+	Code     string `json:"code"`
+	UserID   int64  `json:"user_ id"`
+	Username string `form:"username" json:"username"`
 }
 
 type SubmitPracticeCodeRsp struct {
 	BaseRsp
 	Accept bool `json:"accept"`
+}
+
+type GetQuestionsReq struct {
+	IDList string `form:"ids" json:"ids"`
+}
+
+type GetQuestionsRsp struct {
+	BaseRsp
+	Questions map[int64]*QuestionDetail `json:"questions"`
+}
+
+type QuestionSubmitReq struct {
+	Title         string `json:"title"`
+	Options       string `json:"options"`
+	CorrectOption int64  `json:"correct_option"`
+	Tag           string `json:"tag"`
+	Score         int64  `json:"score"`
+}
+
+type QuestionSubmitRsp struct {
+	BaseRsp
 }
