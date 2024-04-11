@@ -217,6 +217,8 @@ func (p *Practice) GetQuestions(ctx context.Context, ids []int32) (*dto.GetQuest
 		rsp.Questions[q.ID].Title = q.Title
 		rsp.Questions[q.ID].Option = q.Options
 		rsp.Questions[q.ID].CorrectOption = q.CorrectOption
+		rsp.Questions[q.ID].Score = q.Score
+		rsp.Questions[q.ID].Tag = q.Tag
 	}
 	return rsp, nil
 }
@@ -227,6 +229,7 @@ func (p *Practice) QuestionSubmit(ctx context.Context, req *dto.QuestionSubmitRe
 		Options:       req.Options,
 		CorrectOption: req.CorrectOption,
 		Tag:           req.Tag,
+		Score:         req.Score,
 	}
 	err = p.Orm.Table("questions").Create(&nq).Error
 	if err != nil {

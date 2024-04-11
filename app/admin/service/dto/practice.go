@@ -16,8 +16,9 @@ type Questions struct {
 	ID            int64  `json:"id"`
 	Title         string `json:"title"`
 	Options       string `json:"options"`
-	CorrectOption string `json:"correct_option"`
+	CorrectOption int64  `json:"correct_option"`
 	Tag           string `json:"tag"`
+	Score         int64  `json:"score"`
 }
 
 func (cp *CPPPractice) TableName() string {
@@ -47,7 +48,9 @@ type LastSubmitDetail struct {
 type QuestionDetail struct {
 	Title         string `json:"title"`
 	Option        string `json:"option"`
-	CorrectOption string `json:"correct_option"`
+	CorrectOption int64  `json:"correct_option"`
+	Tag           string `json:"tag"`
+	Score         int64  `json:"score"`
 }
 
 type GetPracticeCodeRsp struct {
@@ -58,7 +61,7 @@ type GetPracticeCodeRsp struct {
 type SubmitPracticeCodeReq struct {
 	ID       int64  `json:"id"`
 	Code     string `json:"code"`
-	UserID   int64  `json:"user_id"`
+	UserID   int64  `json:"user_ id"`
 	Username string `form:"username" json:"username"`
 }
 
@@ -79,8 +82,9 @@ type GetQuestionsRsp struct {
 type QuestionSubmitReq struct {
 	Title         string `json:"title"`
 	Options       string `json:"options"`
-	CorrectOption string `json:"correct_option"`
+	CorrectOption int64  `json:"correct_option"`
 	Tag           string `json:"tag"`
+	Score         int64  `json:"score"`
 }
 
 type QuestionSubmitRsp struct {
