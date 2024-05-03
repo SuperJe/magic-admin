@@ -57,8 +57,9 @@ type GetCoursesDetailRsp struct {
 }
 
 type GetLearnedReq struct {
-	CourseType int32 `form:"course_type" json:"course_type"`
-	UserID     int64 `json:"user_id"`
+	CourseType int32  `form:"course_type" json:"course_type"`
+	UserID     int64  `json:"user_id"`
+	Username   string `form:"user_name" json:"user_name"`
 }
 
 type GetLearnedRsp struct {
@@ -94,4 +95,31 @@ type AddLessonRecordRsp struct {
 type GetStudentNameReq struct {
 	UserID int
 	Value  string
+}
+
+type UpdateRecordReq struct {
+	ID            int64     `json:"id"`
+	CourseType    int32     `json:"course_type"`
+	UserID        int       `json:"user_id"`
+	KnowledgeTags string    `json:"tags"`
+	Teacher       string    `json:"teacher"`
+	Remark        string    `json:"remark"`
+	Created       time.Time `json:"created"`
+}
+
+type UpdateRecordRsp struct {
+	Code int32  `json:"code"`
+	Msg  string `json:"msg"`
+	ID   int64  `json:"id"`
+}
+
+type DeleteRecordReq struct {
+	ID     int64 `json:"id"`
+	UserID int   `json:"user_id"`
+}
+
+type DeleteRecordRsp struct {
+	Code int32  `json:"code"`
+	Msg  string `json:"msg"`
+	ID   int64  `json:"id"`
 }
