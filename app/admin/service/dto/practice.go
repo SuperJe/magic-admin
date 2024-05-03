@@ -90,3 +90,13 @@ type QuestionSubmitReq struct {
 type QuestionSubmitRsp struct {
 	BaseRsp
 }
+
+type GetTestReq struct {
+	Id int64 `form:"id" json:"id"`
+}
+
+type GetTestRsp struct {
+	BaseRsp
+	Title string `json:"title"`
+	Pids  string `json:"pids"`
+}
