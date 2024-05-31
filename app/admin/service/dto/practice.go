@@ -63,6 +63,7 @@ type SubmitPracticeCodeReq struct {
 	Code     string `json:"code"`
 	UserID   int64  `json:"user_ id"`
 	Username string `form:"username" json:"username"`
+	Lang     string `json:"lang"`
 }
 
 type SubmitPracticeCodeRsp struct {

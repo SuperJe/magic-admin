@@ -64,7 +64,7 @@ func (p *Practice) SavePracticeCode(ctx context.Context, uid, id int64, code str
 	return p.Orm.Model(cp).UpdateColumn("code", code).Error
 }
 
-func (p *Practice) SubmitPracticeCode(ctx context.Context, uid, id int64, code string) (rsp *dto.SubmitPracticeCodeRsp, err error) {
+func (p *Practice) SubmitPracticeCode(ctx context.Context, uid, id int64, code, lang string) (rsp *dto.SubmitPracticeCodeRsp, err error) {
 	defer func() {
 		status := 1
 		if err != nil {
@@ -111,7 +111,7 @@ func (p *Practice) SubmitPracticeCode(ctx context.Context, uid, id int64, code s
 			return rsp, err
 		}
 
-		actOut, err = getActualOutput(in, code)
+		actOut, err = getActualOutput(in, code, lang)
 		if err != nil {
 			return rsp, err
 		}
@@ -124,9 +124,9 @@ func (p *Practice) SubmitPracticeCode(ctx context.Context, uid, id int64, code s
 	return rsp, err
 }
 
-func getActualOutput(in, code string) (string, error) {
+func getActualOutput(in, code, lang string) (string, error) {
 	reqBody := &model.RunCompilerReq{
-		Lang:  model.LangCPP,
+		Lang:  lang,
 		Code:  code,
 		Input: in,
 	}
@@ -159,7 +159,7 @@ func getActualOutput(in, code string) (string, error) {
 	if data.Code != 0 {
 		return "", fmt.Errorf("compiler err:%s", data.Msg)
 	}
-	return data.OutPut, nil
+	return strings.TrimSpace(data.OutPut), nil
 }
 
 func readPracticeData(scanner *bufio.Scanner) (string, string, error) {

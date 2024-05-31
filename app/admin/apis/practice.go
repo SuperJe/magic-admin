@@ -83,8 +83,7 @@ func (p Practice) SubmitPracticeCode(ctx *gin.Context) {
 	if len(sysUser.Username) > 0 {
 		req.UserID = int64(sysUser.UserId)
 	}
-	rsp, err := svc.SubmitPracticeCode(ctx, req.UserID, req.ID, req.Code)
-	// rsp, err := svc.SubmitPracticeCode(ctx, int64(user.GetUserId(ctx)), req.ID, req.Code)
+	rsp, err := svc.SubmitPracticeCode(ctx, req.UserID, req.ID, req.Code, req.Lang)
 	if err != nil {
 		rsp = &dto.SubmitPracticeCodeRsp{
 			BaseRsp: dto.BaseRsp{Code: -1, Msg: err.Error()},
