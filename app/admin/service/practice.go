@@ -237,3 +237,12 @@ func (p *Practice) QuestionSubmit(ctx context.Context, req *dto.QuestionSubmitRe
 	}
 	return rsp, err
 }
+
+func (p *Practice) GetTest(ctx context.Context, req *dto.GetTestReq) (rsp *dto.GetTestRsp, err error) {
+	tl := &dto.GetTestRsp{}
+	err = p.Orm.Table("test_list").Where("id = ?", req.Id).Find(&tl).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "search test err")
+	}
+	return tl, err
+}

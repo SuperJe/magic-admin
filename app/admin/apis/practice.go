@@ -102,8 +102,6 @@ func (p Practice) GetQuestions(ctx *gin.Context) {
 		p.Error(http.StatusInternalServerError, err, err.Error())
 		return
 	}
-
-	fmt.Println(req, "\n\n\n\n")
 	if len(user.GetRoleName(ctx)) <= 0 {
 		p.Logger.Error(fmt.Errorf("user role err"))
 		p.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
@@ -139,6 +137,31 @@ func (p Practice) QuestionSubmit(ctx *gin.Context) {
 	rsp, err := svc.QuestionSubmit(ctx, req)
 	if err != nil {
 		rsp = &dto.QuestionSubmitRsp{
+			BaseRsp: dto.BaseRsp{Code: -1, Msg: err.Error()},
+		}
+		p.OK(rsp, "success")
+		return
+	}
+	p.OK(rsp, "success")
+}
+
+func (p Practice) GetTest(ctx *gin.Context) {
+	svc := service.Practice{}
+	req := &dto.GetTestReq{}
+	if err := p.MakeContext(ctx).MakeOrm().Bind(req).MakeService(&svc.Service).Errors; err != nil {
+		p.Logger.Error(err)
+		p.Error(http.StatusInternalServerError, err, err.Error())
+		return
+	}
+	fmt.Printf("\n\n\n\ntestid=%d", req.Id)
+	if len(user.GetRoleName(ctx)) <= 0 {
+		p.Logger.Error(fmt.Errorf("user role err"))
+		p.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
+		return
+	}
+	rsp, err := svc.GetTest(ctx, req)
+	if err != nil {
+		rsp = &dto.GetTestRsp{
 			BaseRsp: dto.BaseRsp{Code: -1, Msg: err.Error()},
 		}
 		p.OK(rsp, "success")

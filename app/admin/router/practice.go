@@ -20,5 +20,6 @@ func registerPracticeRouter(v1 *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddl
 		r.POST("/cpp", actions.PermissionAction(), api.SubmitPracticeCode)
 		r.GET("/get_questions", actions.PermissionAction(), api.GetQuestions)
 		r.POST("question_submit", actions.PermissionAction(), api.QuestionSubmit)
+		r.GET("/get_test", actions.PermissionAction(), api.GetTest)
 	}
 }
