@@ -148,7 +148,7 @@ func (p Practice) QuestionSubmit(ctx *gin.Context) {
 }
 
 func (p Practice) AddCodeProblem(ctx *gin.Context) {
-	if user.GetRoleName(ctx) != common.RoleAdmin {
+	if user.GetRoleName(ctx) != common.RoleAdmin && user.GetRoleName(ctx) != common.RoleTeacher {
 		p.Logger.Error(fmt.Errorf("user role err"))
 		p.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
 		return
