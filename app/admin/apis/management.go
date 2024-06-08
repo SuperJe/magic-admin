@@ -17,7 +17,8 @@ type Management struct {
 }
 
 func (p Management) UpdateCodeProblem(ctx *gin.Context) {
-	if user.GetRoleName(ctx) != common.RoleAdmin {
+	role := user.GetRoleName(ctx)
+	if role != common.RoleAdmin && role != common.RoleTeacher {
 		p.Logger.Error(fmt.Errorf("user role err"))
 		p.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
 		return
@@ -49,7 +50,8 @@ func (p Management) UpdateCodeProblem(ctx *gin.Context) {
 }
 
 func (p Management) GetCodeProblem(ctx *gin.Context) {
-	if user.GetRoleName(ctx) != common.RoleAdmin {
+	role := user.GetRoleName(ctx)
+	if role != common.RoleAdmin && role != common.RoleTeacher {
 		p.Logger.Error(fmt.Errorf("user role err"))
 		p.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
 		return
