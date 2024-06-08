@@ -61,15 +61,11 @@ func (p Management) GetCodeProblem(ctx *gin.Context) {
 		p.Error(http.StatusInternalServerError, err, err.Error())
 		return
 	}
-	records, err := svc.GetCodeProblem(ctx)
+	rsp, err := svc.GetCodeProblem(ctx, req.Offset, req.Limit, req.IsReverse)
 	if err != nil {
 		p.Logger.Error(err)
 		p.Error(http.StatusInternalServerError, err, err.Error())
 		return
 	}
-	p.OK(&dto.GetCodeProblemRsp{
-		BaseRsp:  dto.BaseRsp{},
-		Problems: records,
-		Total:    int64(len(records)),
-	}, "success")
+	p.OK(rsp, "success")
 }

@@ -1,12 +1,16 @@
 package dto
 
 type GetCodeProblemReq struct {
+	Offset    uint32 `json:"offset" form:"offset"`
+	Limit     uint32 `json:"limit" form:"limit"`
+	IsReverse bool   `json:"reverse" form:"reverse"`
 }
 
 type GetCodeProblemRsp struct {
 	BaseRsp
 	Problems []*CodeProblem `json:"problems"`
-	Total    int64          `json:"total"`
+	Total    uint32         `json:"total"`
+	HasMore  bool           `json:"has_more"`
 }
 
 type UpdateCodeProblemReq struct {

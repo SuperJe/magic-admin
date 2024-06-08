@@ -139,3 +139,9 @@ func (c *CodeProblem) GetID() int64 {
 	}
 	return c.ID
 }
+
+type CodeProblems []*CodeProblem
+
+func (x CodeProblems) Len() int           { return len(x) }
+func (x CodeProblems) Less(i, j int) bool { return x[i].ID < x[j].ID }
+func (x CodeProblems) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }

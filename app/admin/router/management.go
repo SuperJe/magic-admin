@@ -16,7 +16,7 @@ func registerManagementRouter(v1 *gin.RouterGroup, authMiddleware *jwt.GinJWTMid
 	api := apis.Management{}
 	r := v1.Group("/management").Use(authMiddleware.MiddlewareFunc()).Use(middleware.AuthCheckRole())
 	{
-		r.GET("/all_code_problem", actions.PermissionAction(), api.GetCodeProblem)
+		r.GET("/code_problem", actions.PermissionAction(), api.GetCodeProblem)
 		r.POST("/update_code_problem", actions.PermissionAction(), api.UpdateCodeProblem)
 	}
 }
