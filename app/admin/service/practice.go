@@ -223,6 +223,19 @@ func (p *Practice) GetQuestions(ctx context.Context, ids []int32) (*dto.GetQuest
 	return rsp, nil
 }
 
+func (p *Practice) AddCodeProblem(ctx context.Context, req *dto.AddCodeProblemReq) error {
+	cp := &dto.CodeProblem{
+		PID:           req.PID,
+		Score:         req.Score,
+		Title:         req.Title,
+		Detail:        req.Detail,
+		Tag:           req.Tag,
+		ExampleInput:  req.ExampleInput,
+		ExampleOutput: req.ExampleOutput,
+	}
+	return p.Orm.WithContext(ctx).Create(cp).Error
+}
+
 func (p *Practice) QuestionSubmit(ctx context.Context, req *dto.QuestionSubmitReq) (rsp *dto.QuestionSubmitRsp, err error) {
 	nq := &dto.Questions{
 		Title:         req.Title,
@@ -238,11 +251,14 @@ func (p *Practice) QuestionSubmit(ctx context.Context, req *dto.QuestionSubmitRe
 	return rsp, err
 }
 
-func (p *Practice) GetTest(ctx context.Context, req *dto.GetTestReq) (rsp *dto.GetTestRsp, err error) {
+func (p *Practice) GetTest(ctx context.Context, req *dto.GetTestReq) (*dto.GetTestRsp, error) {
 	tl := &dto.GetTestRsp{}
-	err = p.Orm.Table("test_list").Where("id = ?", req.Id).Find(&tl).Error
+	err := p.Orm.Table("test_list").WithContext(ctx).Where("id = ?", req.Id).Find(&tl).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "search test err")
+	}
+	if len(tl.Pids) == 0 {
+		return nil, fmt.Errorf("未找到相应试卷, id:%d", req.Id)
 	}
 	return tl, err
 }

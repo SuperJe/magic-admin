@@ -3,6 +3,7 @@ package apis
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/SuperJe/coco/pkg/util"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-admin-team/go-admin-core/sdk/api"
@@ -10,6 +11,7 @@ import (
 	"go-admin/app/admin/service"
 	"go-admin/app/admin/service/dto"
 	"go-admin/cmd/migrate/migration/models"
+	"go-admin/common"
 	"net/http"
 )
 
@@ -143,6 +145,31 @@ func (p Practice) QuestionSubmit(ctx *gin.Context) {
 		return
 	}
 	p.OK(rsp, "success")
+}
+
+func (p Practice) AddCodeProblem(ctx *gin.Context) {
+	if user.GetRoleName(ctx) != common.RoleAdmin {
+		p.Logger.Error(fmt.Errorf("user role err"))
+		p.Error(http.StatusBadRequest, fmt.Errorf("permission err"), "permission err")
+		return
+	}
+	svc := service.Practice{}
+	req := &dto.AddCodeProblemReq{}
+	if err := p.MakeContext(ctx).MakeOrm().Bind(req, binding.JSON).MakeService(&svc.Service).Errors; err != nil {
+		p.Logger.Error(err)
+		p.Error(http.StatusBadRequest, err, err.Error())
+		return
+	}
+	if req.PID == 0 || util.ExistEmptyString(req.ExampleOutput, req.ExampleInput, req.Detail, req.Title) {
+		p.Error(http.StatusBadRequest, fmt.Errorf("bad request"), "check params plz")
+		return
+	}
+
+	if err := svc.AddCodeProblem(ctx, req); err != nil {
+		p.OK(&dto.AddCodeProblemRsp{BaseRsp: dto.BaseRsp{Code: -1, Msg: err.Error()}}, "fail")
+		return
+	}
+	p.OK(&dto.AddCodeProblemRsp{}, "success")
 }
 
 func (p Practice) GetTest(ctx *gin.Context) {

@@ -1,6 +1,8 @@
 package dto
 
-import "time"
+import (
+	"time"
+)
 
 type CPPPractice struct {
 	ID         int64     `json:"id" gorm:"column:id"`
@@ -100,4 +102,40 @@ type GetTestRsp struct {
 	BaseRsp
 	Title string `json:"title"`
 	Pids  string `json:"pids"`
+}
+
+type AddCodeProblemReq struct {
+	PID           int64  `json:"p_id"`
+	Score         int64  `json:"score"`
+	Title         string `json:"title"`
+	Detail        string `json:"detail"`
+	ExampleInput  string `json:"example_input"`
+	ExampleOutput string `json:"example_output"`
+	Tag           string `json:"tag"`
+}
+
+type AddCodeProblemRsp struct {
+	BaseRsp
+}
+
+type CodeProblem struct {
+	ID            int64  `gorm:"column:id" json:"id" form:"id"`
+	PID           int64  `gorm:"column:p_id" json:"p_id" form:"p_id"`
+	Score         int64  `gorm:"column:score" json:"score" form:"score"`
+	Title         string `gorm:"column:title" json:"title" form:"title"`
+	Detail        string `gorm:"column:detail" json:"detail" form:"detail"`
+	Tag           string `gorm:"column:tag" json:"tag" form:"tag"`
+	ExampleInput  string `gorm:"column:example_input" json:"example_input" form:"example_input"`
+	ExampleOutput string `gorm:"column:example_output" json:"example_output" form:"example_output"`
+}
+
+func (c *CodeProblem) TableName() string {
+	return "code_problem"
+}
+
+func (c *CodeProblem) GetID() int64 {
+	if c == nil {
+		return 0
+	}
+	return c.ID
 }
