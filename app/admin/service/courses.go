@@ -53,7 +53,7 @@ func (c *Courses) GetLearnedLessons(ctx context.Context, req *dto.GetLearnedReq)
 		return nil, errors.Wrap(err, "Exec err")
 	}
 	records := make([]*dto.LessonRecord, 0)
-	tx := c.Orm.Table(tb).Where("is_deleted = ?", 0).Find(
+	tx := c.Orm.Table(tb).Find(
 		&records, &dto.LessonRecord{CourseType: req.CourseType, UserID: req.UserID})
 	if req.CourseType == 0 {
 		tx = c.Orm.Table(tb).Where("is_deleted = ?", 0).Find(
